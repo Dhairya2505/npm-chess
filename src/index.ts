@@ -5,61 +5,61 @@ import { Coordinate } from './types/types'
 export class Board {
     board: Array<Array<null | Piece>>;
 
-    #validPositions(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
-        if(!(current_x >= 0 && current_x <= 7)) return false;
-        if(!(current_y >= 0 && current_y <= 7)) return false;
-        if(!(goal_x >= 0 && goal_x <= 7)) return false;
-        if(!(goal_y >= 0 && goal_y <= 7)) return false;
-        if(current_x == goal_x && current_y == goal_y) return false;
+    #validPositions(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate) {
+        if (!(current_x >= 0 && current_x <= 7)) return false;
+        if (!(current_y >= 0 && current_y <= 7)) return false;
+        if (!(goal_x >= 0 && goal_x <= 7)) return false;
+        if (!(goal_y >= 0 && goal_y <= 7)) return false;
+        if (current_x == goal_x && current_y == goal_y) return false;
         return true;
     }
 
-    #selfPiecePresent(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
-        if(this.board[current_x][current_y]?.color == this.board[goal_x][goal_y]?.color){
+    #selfPiecePresent(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate) {
+        if (this.board[current_x][current_y]?.color == this.board[goal_x][goal_y]?.color) {
             return false;
         } else {
             return true;
         }
     }
 
-    #betweenBishop(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
-        if(goal_x > current_x && goal_y > current_y){
-            for (let i = 1;i<Math.abs(goal_x-current_x);i++){
-                if(this.board[current_x+i][current_y+i] != null){
+    #betweenBishop(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate) {
+        if (goal_x > current_x && goal_y > current_y) {
+            for (let i = 1; i < Math.abs(goal_x - current_x); i++) {
+                if (this.board[current_x + i][current_y + i] != null) {
                     return false;
                 }
             }
-            if(!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)){
+            if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
                 return false;
             }
             return true;
-        } else if (goal_x < current_x && goal_y > current_y){
-            for (let i = 1;i<Math.abs(goal_x-current_x);i++){
-                if(this.board[current_x-i][current_y+i] != null){
+        } else if (goal_x < current_x && goal_y > current_y) {
+            for (let i = 1; i < Math.abs(goal_x - current_x); i++) {
+                if (this.board[current_x - i][current_y + i] != null) {
                     return false;
                 }
             }
-            if(!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)){
+            if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
                 return false;
             }
             return true;
-        } else if (goal_x < current_x && goal_y < current_y){
-            for (let i = 1;i<Math.abs(goal_x-current_x);i++){
-                if(this.board[current_x-i][current_y-i] != null){
+        } else if (goal_x < current_x && goal_y < current_y) {
+            for (let i = 1; i < Math.abs(goal_x - current_x); i++) {
+                if (this.board[current_x - i][current_y - i] != null) {
                     return false;
                 }
             }
-            if(!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)){
+            if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
                 return false;
             }
             return true;
-        } else if (goal_x > current_x && goal_y < current_y){
-            for (let i = 1;i<Math.abs(goal_x-current_x);i++){
-                if(this.board[current_x+i][current_y-i] != null){
+        } else if (goal_x > current_x && goal_y < current_y) {
+            for (let i = 1; i < Math.abs(goal_x - current_x); i++) {
+                if (this.board[current_x + i][current_y - i] != null) {
                     return false;
                 }
             }
-            if(!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)){
+            if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
                 return false;
             }
             return true;
@@ -68,24 +68,30 @@ export class Board {
         }
     }
 
-    #validRookMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
-        if(current_x == goal_x){
-            if(current_y < goal_y){
-                for(let i=current_y+1 ; i<=goal_y ; i++){
-                    if(this.board[goal_x][i] != null){
+    #validRookMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate) {
+        if (current_x == goal_x) {
+            if (current_y < goal_y) {
+                for (let i = current_y + 1; i <= goal_y; i++) {
+                    if (this.board[goal_x][i] != null) {
                         return "Invalid move"
                     }
+                }
+                if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
+                    return "Invalid move";
                 }
                 // const piece = this.board[current_x][current_y];
                 // this.board[current_x][current_y] = null;
                 // this.board[goal_x][goal_y] = piece;
                 // this.board[goal_x][goal_y]?.increment_move();
                 return "valid move"
-            } else if(current_y > goal_y){
-                for(let i=current_y-1 ; i>=goal_y ; i--){
-                    if(this.board[goal_x][i] != null){
+            } else if (current_y > goal_y) {
+                for (let i = current_y - 1; i >= goal_y; i--) {
+                    if (this.board[goal_x][i] != null) {
                         return "Invalid move"
                     }
+                }
+                if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
+                    return "Invalid move";
                 }
                 // const piece = this.board[current_x][current_y];
                 // this.board[current_x][current_y] = null;
@@ -95,23 +101,29 @@ export class Board {
             } else {
                 return "Invalid move";
             }
-        } else if(current_y == goal_y){
-            if(current_x < goal_x){
-                for(let i=current_x+1 ; i<=goal_x ; i++){
-                    if(this.board[i][goal_y] != null){
+        } else if (current_y == goal_y) {
+            if (current_x < goal_x) {
+                for (let i = current_x + 1; i < goal_x; i++) {
+                    if (this.board[i][goal_y] != null) {
                         return "Invalid move"
                     }
+                }
+                if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
+                    return "Invalid move";
                 }
                 // const piece = this.board[current_x][current_y];
                 // this.board[current_x][current_y] = null;
                 // this.board[goal_x][goal_y] = piece;
                 // this.board[goal_x][goal_y]?.increment_move();
                 return "valid move"
-            } else if(current_x > goal_x){
-                for(let i=current_x-1 ; i>=goal_x ; i--){
-                    if(this.board[i][goal_y] != null){
+            } else if (current_x > goal_x) {
+                for (let i = current_x - 1; i >= goal_x; i--) {
+                    if (this.board[i][goal_y] != null) {
                         return "Invalid move"
                     }
+                }
+                if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
+                    return "Invalid move";
                 }
                 // const piece = this.board[current_x][current_y];
                 // this.board[current_x][current_y] = null;
@@ -126,19 +138,32 @@ export class Board {
         }
     }
 
-    #validPawnMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
+    #validBishopMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate) {
+        if (this.#betweenBishop(current_x, current_y, goal_x, goal_y)) {
+            if(Math.abs(current_x - goal_x) == Math.abs(current_y-goal_y)){
+                // const piece = this.board[current_x][current_y];
+                // this.board[current_x][current_y] = null;
+                // this.board[goal_x][goal_y] = piece;
+                // this.board[goal_x][goal_y]?.increment_move();
+                return "Valid move"
+            }
+        }
+        return "Invalid move"
+    }
+
+    #validPawnMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate) {
         const color = this.board[current_x][current_y]?.color
         switch (color) {
 
             case "b":
-                if(!(goal_x >= current_x+1 && goal_x <= current_x+2)) return "Invalid move";
-                if(this.board[current_x][current_y]?.moves == 0){
-                    if(!(goal_x >= current_x+1 && goal_x <= current_x+2)) return "Invalid move";
-                    const possible_coords = [ [1,-1],[1,0], [1,1] ];
-                    for(let i =0;i<3;i++){
-                        if(goal_x == current_x+possible_coords[i][0] && goal_y == current_y+possible_coords[i][1]){
-                            if(possible_coords[i][1] == Math.abs(1)){
-                                if(this.board[goal_x][goal_y] && this.board[goal_x][goal_y].color != this.board[current_x][current_y].color){
+                if (!(goal_x >= current_x + 1 && goal_x <= current_x + 2)) return "Invalid move";
+                if (this.board[current_x][current_y]?.moves == 0) {
+                    if (!(goal_x >= current_x + 1 && goal_x <= current_x + 2)) return "Invalid move";
+                    const possible_coords = [[1, -1], [1, 0], [1, 1]];
+                    for (let i = 0; i < 3; i++) {
+                        if (goal_x == current_x + possible_coords[i][0] && goal_y == current_y + possible_coords[i][1]) {
+                            if (possible_coords[i][1] == Math.abs(1)) {
+                                if (this.board[goal_x][goal_y] && this.board[goal_x][goal_y].color != this.board[current_x][current_y].color) {
                                     // const piece = this.board[current_x][current_y];
                                     // this.board[current_x][current_y] = null;
                                     // this.board[goal_x][goal_y] = piece;
@@ -156,23 +181,23 @@ export class Board {
                             }
                         }
                     }
-                    if(goal_x == current_x+2 && goal_y == current_y){
-                        if(this.board[current_x+1][current_y] == null){
+                    if (goal_x == current_x + 2 && goal_y == current_y) {
+                        if (this.board[current_x + 1][current_y] == null) {
                             // const piece = this.board[current_x][current_y];
                             // this.board[current_x][current_y] = null;
                             // this.board[goal_x][goal_y] = piece;
                             // this.board[goal_x][goal_y]?.increment_move();
                             return "Valid move";
                         } else {
-                            return "Invalid move";        
+                            return "Invalid move";
                         }
                     }
                     return "Invalid move";
                 } else {
-                    if(!(goal_x == current_x+1)) return "Invalid move";
-                    const possible_coords = [ [1,-1],[1,0], [1,1] ];
-                    for(let i =0;i<3;i++){
-                        if(goal_x == current_x+possible_coords[i][0] && goal_y == current_y+possible_coords[i][1]){
+                    if (!(goal_x == current_x + 1)) return "Invalid move";
+                    const possible_coords = [[1, -1], [1, 0], [1, 1]];
+                    for (let i = 0; i < 3; i++) {
+                        if (goal_x == current_x + possible_coords[i][0] && goal_y == current_y + possible_coords[i][1]) {
                             // const piece = this.board[current_x][current_y];
                             // this.board[current_x][current_y] = null;
                             // this.board[goal_x][goal_y] = piece;
@@ -185,15 +210,15 @@ export class Board {
                 break;
 
             case "w":
-                if(!(goal_x >= current_x-1 && goal_x <= current_x-2)) return "Invalid move";
-                if(this.board[current_x][current_y]?.moves == 0){
-                    if(!(goal_x >= current_x-1 && goal_x <= current_x-2)) return "Invalid move";
-                    const possible_coords = [ [-1,-1],[-1,0], [-1,1] ];
-                    for(let i=0;i<3;i++){
-                        if(goal_x == current_x+possible_coords[i][0] && goal_y == current_y+possible_coords[i][1]){
-                            if(goal_x == current_x+possible_coords[i][0] && goal_y == current_y+possible_coords[i][1]){
-                                if(possible_coords[i][1] == Math.abs(1)){
-                                    if(this.board[goal_x][goal_y] && this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color){
+                if (!(goal_x >= current_x - 1 && goal_x <= current_x - 2)) return "Invalid move";
+                if (this.board[current_x][current_y]?.moves == 0) {
+                    if (!(goal_x >= current_x - 1 && goal_x <= current_x - 2)) return "Invalid move";
+                    const possible_coords = [[-1, -1], [-1, 0], [-1, 1]];
+                    for (let i = 0; i < 3; i++) {
+                        if (goal_x == current_x + possible_coords[i][0] && goal_y == current_y + possible_coords[i][1]) {
+                            if (goal_x == current_x + possible_coords[i][0] && goal_y == current_y + possible_coords[i][1]) {
+                                if (possible_coords[i][1] == Math.abs(1)) {
+                                    if (this.board[goal_x][goal_y] && this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color) {
                                         // const piece = this.board[current_x][current_y];
                                         // this.board[current_x][current_y] = null;
                                         // this.board[goal_x][goal_y] = piece;
@@ -212,8 +237,8 @@ export class Board {
                             }
                         }
                     }
-                    if(goal_x == current_x-2 && goal_y == current_y){
-                        if(this.board[current_x-1][current_y] == null){
+                    if (goal_x == current_x - 2 && goal_y == current_y) {
+                        if (this.board[current_x - 1][current_y] == null) {
                             // const piece = this.board[current_x][current_y];
                             // this.board[current_x][current_y] = null;
                             // this.board[goal_x][goal_y] = piece;
@@ -226,10 +251,10 @@ export class Board {
                     }
                     return "Invalid move";
                 } else {
-                    if(!(goal_x == current_x-1)) return "Invalid move";
-                    const possible_coords = [ [-1,-1],[-1,0], [-1,1] ];
-                    for(let i=0;i<3;i++){
-                        if(goal_x == current_x+possible_coords[i][0] && goal_y == current_y+possible_coords[i][1]){
+                    if (!(goal_x == current_x - 1)) return "Invalid move";
+                    const possible_coords = [[-1, -1], [-1, 0], [-1, 1]];
+                    for (let i = 0; i < 3; i++) {
+                        if (goal_x == current_x + possible_coords[i][0] && goal_y == current_y + possible_coords[i][1]) {
                             // const piece = this.board[current_x][current_y];
                             // this.board[current_x][current_y] = null;
                             // this.board[goal_x][goal_y] = piece;
@@ -247,7 +272,7 @@ export class Board {
         }
     }
 
-    #validKnightMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
+    #validKnightMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate) {
 
         const coords = [
             [-2, -1],
@@ -256,8 +281,8 @@ export class Board {
             [1, 2]
         ]
 
-        for(let i =0;i<4;i++){
-            if(current_x+coords[i][0] == goal_x && current_y+coords[i][1] == goal_y){
+        for (let i = 0; i < 4; i++) {
+            if (current_x + coords[i][0] == goal_x && current_y + coords[i][1] == goal_y) {
                 // const piece = this.board[current_x][current_y];
                 // this.board[current_x][current_y] = null;
                 // this.board[goal_x][goal_y] = piece;
@@ -266,8 +291,8 @@ export class Board {
             }
         }
 
-        for(let i =0;i<4;i++){
-            if(current_x+coords[i][1] == goal_x && current_y+coords[i][0] == goal_y){
+        for (let i = 0; i < 4; i++) {
+            if (current_x + coords[i][1] == goal_x && current_y + coords[i][0] == goal_y) {
                 // const piece = this.board[current_x][current_y];
                 // this.board[current_x][current_y] = null;
                 // this.board[goal_x][goal_y] = piece;
@@ -279,27 +304,96 @@ export class Board {
 
     }
 
-    #validBishopMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
-        if(this.#betweenBishop(current_x, current_y, goal_x, goal_y)){
-            // const piece = this.board[current_x][current_y];
-            // this.board[current_x][current_y] = null;
-            // this.board[goal_x][goal_y] = piece;
-            // this.board[goal_x][goal_y]?.increment_move();
-            return "Valid move"
+    #validKingMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate) {
+        let coords = [[-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1]]
+        for (let i = 0; i < 8; i++) {
+            if (current_x + coords[i][0] == goal_x && current_y + coords[i][1] == goal_y) {
+                return "Valid move";
+            }
+        }
+        return "Invalid move";
+    }
+
+    #validQueenMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate) {
+        if (current_x == goal_x) {
+            if (current_y < goal_y) {
+                for (let i = current_y + 1; i <= goal_y; i++) {
+                    if (this.board[goal_x][i] != null) {
+                        return "Invalid move"
+                    }
+                }
+                if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
+                    return "Invalid move";
+                }
+                // const piece = this.board[current_x][current_y];
+                // this.board[current_x][current_y] = null;
+                // this.board[goal_x][goal_y] = piece;
+                // this.board[goal_x][goal_y]?.increment_move();
+                return "valid move"
+            } else if (current_y > goal_y) {
+                for (let i = current_y - 1; i >= goal_y; i--) {
+                    if (this.board[goal_x][i] != null) {
+                        return "Invalid move"
+                    }
+                }
+                if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
+                    return "Invalid move";
+                }
+                // const piece = this.board[current_x][current_y];
+                // this.board[current_x][current_y] = null;
+                // this.board[goal_x][goal_y] = piece;
+                // this.board[goal_x][goal_y]?.increment_move();
+                return "valid move"
+            } else {
+                return "Invalid move";
+            }
+        } else if (current_y == goal_y) {
+            if (current_x < goal_x) {
+                for (let i = current_x + 1; i < goal_x; i++) {
+                    if (this.board[i][goal_y] != null) {
+                        return "Invalid move"
+                    }
+                }
+                if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
+                    return "Invalid move";
+                }
+                // const piece = this.board[current_x][current_y];
+                // this.board[current_x][current_y] = null;
+                // this.board[goal_x][goal_y] = piece;
+                // this.board[goal_x][goal_y]?.increment_move();
+                return "valid move"
+            } else if (current_x > goal_x) {
+                for (let i = current_x - 1; i >= goal_x; i--) {
+                    if (this.board[i][goal_y] != null) {
+                        return "Invalid move"
+                    }
+                }
+                if (!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)) {
+                    return "Invalid move";
+                }
+                // const piece = this.board[current_x][current_y];
+                // this.board[current_x][current_y] = null;
+                // this.board[goal_x][goal_y] = piece;
+                // this.board[goal_x][goal_y]?.increment_move();
+                return "valid move"
+            } else {
+                return "Invalid move";
+            }
         } else {
+            if (this.#betweenBishop(current_x, current_y, goal_x, goal_y)) {
+                if(Math.abs(current_x - goal_x) == Math.abs(current_y-goal_y)){
+                    // const piece = this.board[current_x][current_y];
+                    // this.board[current_x][current_y] = null;
+                    // this.board[goal_x][goal_y] = piece;
+                    // this.board[goal_x][goal_y]?.increment_move();
+                    return "Valid move"
+                }
+            }
             return "Invalid move"
         }
     }
 
-    #validKingMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
-
-    }
-
-    #validQueenMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
-
-    }
-
-    constructor(){
+    constructor() {
 
         const knights = get_knights();
         const rooks = get_rooks();
@@ -311,10 +405,10 @@ export class Board {
 
 
         this.board = [
-            [rooks[2], knights[2], bishops[2], queens[0], kings[0], bishops[0], knights[0], rooks[0]],
-            [pawns[14], pawns[12], pawns[10], null, pawns[6], pawns[4], pawns[2], pawns[0]],
+            [null, knights[2], bishops[2], queens[0], kings[0], bishops[0], knights[0], rooks[0]],
+            [pawns[14], pawns[12], pawns[10], pawns[8], pawns[6], pawns[4], pawns[2], pawns[0]],
             [null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null],
+            [null, rooks[2], null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [pawns[1], pawns[3], pawns[5], pawns[7], pawns[9], pawns[11], pawns[13], pawns[15]],
@@ -322,18 +416,18 @@ export class Board {
         ]
     }
 
-    canMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
+    canMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate) {
         const piece: Piece | null = this.board[current_x][current_y];
-        if(!piece){
-             console.log("Invalid move");
-             return;
+        if (!piece) {
+            console.log("Invalid move");
+            return;
         }
-        if(!this.#validPositions(current_x, current_y, goal_x, goal_y)){
+        if (!this.#validPositions(current_x, current_y, goal_x, goal_y)) {
             console.log("Invalid Positions !!")
             return;
         }
-        
-        if(!this.#selfPiecePresent(current_x, current_y, goal_x, goal_y)){
+
+        if (!this.#selfPiecePresent(current_x, current_y, goal_x, goal_y)) {
             console.log("Invalid move")
             return;
         }
@@ -345,12 +439,12 @@ export class Board {
                 msg = this.#validRookMove(current_x, current_y, goal_x, goal_y);
                 console.log(msg);
                 break;
-            
+
             case "pawn":
                 msg = this.#validPawnMove(current_x, current_y, goal_x, goal_y);
                 console.log(msg);
                 break;
-            
+
             case "knight":
                 msg = this.#validKnightMove(current_x, current_y, goal_x, goal_y);
                 console.log(msg)
@@ -360,7 +454,17 @@ export class Board {
                 msg = this.#validBishopMove(current_x, current_y, goal_x, goal_y);
                 console.log(msg)
                 break;
-            
+
+            case "king":
+                msg = this.#validKingMove(current_x, current_y, goal_x, goal_y);
+                console.log(msg)
+                break;
+
+            case "queen":
+                msg = this.#validQueenMove(current_x, current_y, goal_x, goal_y)
+                console.log(msg);
+                break;
+
             default:
                 break;
         }
@@ -368,12 +472,10 @@ export class Board {
     }
 }
 
-function main(){
+function main() {
     const board = new Board()
 
-    board.canMove(0,2,5,7);
-    board.canMove(5,7,6,6);
-
+    board.canMove(3, 1,6, 1);
 }
 
 main();
