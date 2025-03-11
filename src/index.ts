@@ -79,14 +79,6 @@ export class Board {
         }
     }
 
-    #validKnightMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
-    
-    }
-
-    #validBishopMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
-
-    }
-
     #validPawnMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
         const color = this.board[current_x][current_y]?.color
         switch (color) {
@@ -208,6 +200,42 @@ export class Board {
         }
     }
 
+    #validKnightMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
+
+        const coords = [
+            [-2, -1],
+            [-2, 1],
+            [-1, 2],
+            [1, 2]
+        ]
+
+        for(let i =0;i<4;i++){
+            if(current_x+coords[i][0] == goal_x && current_y+coords[i][1] == goal_y){
+                // const piece = this.board[current_x][current_y];
+                // this.board[current_x][current_y] = null;
+                // this.board[goal_x][goal_y] = piece;
+                // this.board[goal_x][goal_y]?.increment_move();
+                return "Valid move"
+            }
+        }
+
+        for(let i =0;i<4;i++){
+            if(current_x+coords[i][1] == goal_x && current_y+coords[i][0] == goal_y){
+                // const piece = this.board[current_x][current_y];
+                // this.board[current_x][current_y] = null;
+                // this.board[goal_x][goal_y] = piece;
+                // this.board[goal_x][goal_y]?.increment_move();
+                return "Valid move"
+            }
+        }
+        return "Invalid move"
+
+    }
+
+    #validBishopMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
+
+    }
+
     #validKingMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
 
     }
@@ -269,6 +297,10 @@ export class Board {
                 console.log(msg);
                 break;
             
+            case "knight":
+                msg = this.#validKnightMove(current_x, current_y, goal_x, goal_y);
+                console.log(msg)
+                break;
             default:
                 break;
         }
@@ -279,8 +311,9 @@ export class Board {
 // function main(){
 //     const board = new Board()
 
-//     board.canMove(1,0,2,1);
-//     // board.canMove(2,0,4,0);
+//     board.canMove(0,1,2,2);
+//     board.canMove(2,2,4,1);
+//     board.canMove(4,1,6,2);
 
 // }
 
