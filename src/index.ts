@@ -10,6 +10,7 @@ export class Board {
         if(!(current_y >= 0 && current_y <= 7)) return false;
         if(!(goal_x >= 0 && goal_x <= 7)) return false;
         if(!(goal_y >= 0 && goal_y <= 7)) return false;
+        if(current_x == goal_x && current_y == goal_y) return false;
         return true;
     }
 
@@ -18,6 +19,52 @@ export class Board {
             return false;
         } else {
             return true;
+        }
+    }
+
+    #betweenBishop(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
+        if(goal_x > current_x && goal_y > current_y){
+            for (let i = 1;i<Math.abs(goal_x-current_x);i++){
+                if(this.board[current_x+i][current_y+i] != null){
+                    return false;
+                }
+            }
+            if(!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)){
+                return false;
+            }
+            return true;
+        } else if (goal_x < current_x && goal_y > current_y){
+            for (let i = 1;i<Math.abs(goal_x-current_x);i++){
+                if(this.board[current_x-i][current_y+i] != null){
+                    return false;
+                }
+            }
+            if(!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)){
+                return false;
+            }
+            return true;
+        } else if (goal_x < current_x && goal_y < current_y){
+            for (let i = 1;i<Math.abs(goal_x-current_x);i++){
+                if(this.board[current_x-i][current_y-i] != null){
+                    return false;
+                }
+            }
+            if(!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)){
+                return false;
+            }
+            return true;
+        } else if (goal_x > current_x && goal_y < current_y){
+            for (let i = 1;i<Math.abs(goal_x-current_x);i++){
+                if(this.board[current_x+i][current_y-i] != null){
+                    return false;
+                }
+            }
+            if(!(this.board[goal_x][goal_y] == null || this.board[goal_x][goal_y].color != this.board[current_x][current_y]?.color)){
+                return false;
+            }
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -233,7 +280,15 @@ export class Board {
     }
 
     #validBishopMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
-
+        if(this.#betweenBishop(current_x, current_y, goal_x, goal_y)){
+            // const piece = this.board[current_x][current_y];
+            // this.board[current_x][current_y] = null;
+            // this.board[goal_x][goal_y] = piece;
+            // this.board[goal_x][goal_y]?.increment_move();
+            return "Valid move"
+        } else {
+            return "Invalid move"
+        }
     }
 
     #validKingMove(current_x: Coordinate, current_y: Coordinate, goal_x: Coordinate, goal_y: Coordinate){
@@ -257,7 +312,7 @@ export class Board {
 
         this.board = [
             [rooks[2], knights[2], bishops[2], queens[0], kings[0], bishops[0], knights[0], rooks[0]],
-            [pawns[14], pawns[12], pawns[10], pawns[8], pawns[6], pawns[4], pawns[2], pawns[0]],
+            [pawns[14], pawns[12], pawns[10], null, pawns[6], pawns[4], pawns[2], pawns[0]],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
@@ -273,12 +328,11 @@ export class Board {
              console.log("Invalid move");
              return;
         }
-
         if(!this.#validPositions(current_x, current_y, goal_x, goal_y)){
             console.log("Invalid Positions !!")
             return;
         }
-
+        
         if(!this.#selfPiecePresent(current_x, current_y, goal_x, goal_y)){
             console.log("Invalid move")
             return;
@@ -301,6 +355,12 @@ export class Board {
                 msg = this.#validKnightMove(current_x, current_y, goal_x, goal_y);
                 console.log(msg)
                 break;
+
+            case "bishop":
+                msg = this.#validBishopMove(current_x, current_y, goal_x, goal_y);
+                console.log(msg)
+                break;
+            
             default:
                 break;
         }
@@ -308,13 +368,12 @@ export class Board {
     }
 }
 
-// function main(){
-//     const board = new Board()
+function main(){
+    const board = new Board()
 
-//     board.canMove(0,1,2,2);
-//     board.canMove(2,2,4,1);
-//     board.canMove(4,1,6,2);
+    board.canMove(0,2,5,7);
+    board.canMove(5,7,6,6);
 
-// }
+}
 
-// main();
+main();
