@@ -1,13 +1,12 @@
 {
-  "name": "node-chess-game",
-  "version": "1.0.20",
-  "main": "index.js",
-  "types": "index.ts",
+  "name": "node-game-chess",
+  "version": "1.0.6",
+  "main": "dist/index.js",
   "type": "module",
   "scripts": {
   },
   "keywords": [],
   "author": "Dhairya Singla",
   "license": "ISC",
-  "description": "King movement corrected"
+  "description": "return board or null"
 }
