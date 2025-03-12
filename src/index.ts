@@ -211,55 +211,51 @@ export class Board {
         }
 
         let i = 1; 
-        if(current_x+i <= 7){
-            while(board[current_x+i][current_y] == null && current_x+i <= 7){
-                response.canMoveto.push({x: current_x+i as Coordinate_Type, y: current_y});
-                i++;
-            }
-            if(current_x + i != 8){
+        while(current_x+i <= 7){
+            if(board[current_x+i][current_y] != null){
                 if(board[current_x+i][current_y]?.color != board[current_x][current_y]?.color){
                     response.canCut.push({ x: current_x+i as Coordinate_Type, y: current_y })
                 }
+                break;
             }
+            response.canMoveto.push({x: current_x+i as Coordinate_Type, y: current_y});
+            i++;
         }
 
         i=1;
-        if(current_y+i <= 7){
-            while(board[current_x][current_y+i] == null && current_y+i <= 7){
-                response.canMoveto.push({x: current_x , y: current_y+i as Coordinate_Type});
-                i++;
-            }
-            if(current_y+i != 8){
+        while(current_y+i <= 7){
+            if(board[current_x][current_y+i] != null){
                 if(board[current_x][current_y+i]?.color != board[current_x][current_y]?.color){
                     response.canCut.push({ x: current_x, y: current_y+i as Coordinate_Type })
                 }
+                break;
             }
+            response.canMoveto.push({x: current_x, y: current_y+i as Coordinate_Type});
+            i++;
         }
 
         i=1;
-        if(current_x-i >= 0){
-            while(board[current_x-i][current_y] == null && current_x-i >= 0){
-                response.canMoveto.push({x: current_x-i as Coordinate_Type , y: current_y });
-                i++;
-            }
-            if(current_x-i != -1){
+        while(current_x-i >= 0){
+            if(board[current_x-i][current_y] != null){
                 if(board[current_x-i][current_y]?.color != board[current_x][current_y]?.color){
                     response.canCut.push({ x: current_x-i as Coordinate_Type, y: current_y })
                 }
+                break;
             }
+            response.canMoveto.push({x: current_x-i as Coordinate_Type, y: current_y});
+            i++;
         }
 
         i=1;
-        if(current_y-i >= 0){
-            while(board[current_x][current_y-i] == null && current_y-i >= 0){
-                response.canMoveto.push({x: current_x , y: current_y-i as Coordinate_Type});
-                i++;
-            }
-            if(current_y-i != -1){
+        while(current_y-i >= 0){
+            if(board[current_x][current_y-i] != null){
                 if(board[current_x][current_y-i]?.color != board[current_x][current_y]?.color){
                     response.canCut.push({ x: current_x, y: current_y-i as Coordinate_Type })
                 }
+                break;
             }
+            response.canMoveto.push({x: current_x, y: current_y-i as Coordinate_Type});
+            i++;
         }
 
         return response;
