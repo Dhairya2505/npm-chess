@@ -6,10 +6,10 @@ class Piece {
     position: location;
     moves: number = 0;
 
-    increment_move(){
-        this.moves = this.moves+1;
+    increment_move() {
+        this.moves = this.moves + 1;
     }
-    
+
     constructor(name: piece_name, color: color, position: location) {
         this.name = name
         this.color = color
@@ -24,12 +24,13 @@ export class Board {
         from: location,
         to: location
     }[];
-    
-    #changeTurn(){
+    private winner: null | color;
+
+    #changeTurn() {
         this.turn = !this.turn;
     }
 
-    #addStep(current_x: coordinate, current_y: coordinate, goal_x: coordinate, goal_y: coordinate){
+    #addStep(current_x: coordinate, current_y: coordinate, goal_x: coordinate, goal_y: coordinate) {
         this.steps.push({
             from: {
                 x: current_x,
@@ -42,7 +43,7 @@ export class Board {
         })
     }
 
-    constructor(){
+    constructor() {
 
         const knights = get_knights();
         const rooks = get_rooks();
@@ -53,6 +54,7 @@ export class Board {
 
         this.steps = [];
         this.turn = true;
+        this.winner = null;
 
         this.chess_board = [
             [rooks[2], knights[2], bishops[2], queens[0], kings[0], bishops[0], knights[0], rooks[0]],
@@ -66,23 +68,31 @@ export class Board {
         ]
     }
 
-    getBoard(){
+    getBoard() {
         return this.chess_board;
     }
 
-    getTurn(){
+    getTurn(): color {
         return this.turn ? "w" : "b";
     }
 
-    getSteps(){
+    getSteps() {
         return this.steps;
     }
 
-    canMoveTo(board: Board, current_x: number, current_y: number): response | null {
-        if(!(current_x >= 0 && current_x <= 7)) return null;
-        if(!(current_y >= 0 && current_y <= 7)) return null;
+    #setWinner(winner: color){
+        this.winner = winner
+    }
 
-        if(board.getTurn() != board.chess_board[current_x][current_y]?.color){
+    getWinner() {
+        return this.winner;
+    }
+
+    canMoveTo(board: Board, current_x: number, current_y: number): response | null {
+        if (!(current_x >= 0 && current_x <= 7)) return null;
+        if (!(current_y >= 0 && current_y <= 7)) return null;
+
+        if (board.getTurn() != board.chess_board[current_x][current_y]?.color) {
             return null;
         }
 
@@ -96,17 +106,18 @@ export class Board {
         switch (name) {
             case "rook":
                 return validRookMove(board.chess_board, current_x as coordinate, current_y as coordinate);
+
             case "pawn":
                 return validPawnMove(board.chess_board, current_x as coordinate, current_y as coordinate);
 
             case "bishop":
                 return validBishopMove(board.chess_board, current_x as coordinate, current_y as coordinate);
-            
+
             case "knight":
                 return validKnightMove(board.chess_board, current_x as coordinate, current_y as coordinate);
 
             case "king":
-                return validKingMove(board.chess_board, current_x as coordinate, current_y as coordinate);
+                return validKingMove(board, current_x as coordinate, current_y as coordinate);
 
             case "queen":
                 return validQueenMove(board.chess_board, current_x as coordinate, current_y as coordinate)
@@ -116,7 +127,7 @@ export class Board {
         }
     }
 
-    move(board: Board , current_x: coordinate, current_y: coordinate, goal_x: coordinate, goal_y: coordinate) {
+    move(board: Board, current_x: coordinate, current_y: coordinate, goal_x: coordinate, goal_y: coordinate) {
         const piece: piece | null = board.chess_board[current_x][current_y];
         if (!piece) {
             return null;
@@ -136,10 +147,21 @@ export class Board {
             x: goal_x,
             y: goal_y
         }
+        const check = isCheck(board, goal_x, goal_y)
+        let checkMate = false;
+        if(check.check && check.king){
+            checkMate = isCheckMate(board, check.king, goal_x, goal_y)
+            if(checkMate){
+                this.#setWinner(board.getBoard()[goal_x][goal_y]?.color as color);
+            }
+        }
         board.#changeTurn()
         board.#addStep(current_x, current_y, goal_x, goal_y);
-        return board;
-
+        return {
+            board,
+            check: check.check,
+            checkMate
+        };
     }
 
 }
@@ -161,7 +183,7 @@ function validPositions(current_x: coordinate, current_y: coordinate, goal_x: co
     return true;
 }
 
-function get_knights(){
+function get_knights() {
     const knights: piece[] = []
     const coords: location[] = [{ x: 6, y: 0 }, { x: 1, y: 7 }, { x: 1, y: 0 }, { x: 6, y: 7 }]
 
@@ -175,10 +197,10 @@ function get_knights(){
     return knights;
 }
 
-function get_rooks(){
+function get_rooks() {
     const rooks: piece[] = []
     const coords: location[] = [{ x: 7, y: 0 }, { x: 0, y: 7 }, { x: 0, y: 0 }, { x: 7, y: 7 }]
-    
+
     for (let i = 0; i < 4; i++) {
         if (i % 2 == 0) {
             rooks.push(new Piece('rook', 'b', coords[i]))
@@ -189,7 +211,7 @@ function get_rooks(){
     return rooks;
 }
 
-function get_bishops(){
+function get_bishops() {
     const bishops: piece[] = []
     const coords: location[] = [{ x: 5, y: 0 }, { x: 2, y: 7 }, { x: 2, y: 0 }, { x: 5, y: 7 }]
 
@@ -203,10 +225,10 @@ function get_bishops(){
     return bishops;
 }
 
-function get_pawns(){
+function get_pawns() {
     const pawns: piece[] = []
     const coords: location[] = [{ x: 7, y: 1 }, { x: 0, y: 6 }, { x: 6, y: 1 }, { x: 1, y: 6 }, { x: 5, y: 1 }, { x: 2, y: 6 }, { x: 4, y: 1 }, { x: 3, y: 6 }, { x: 3, y: 1 }, { x: 4, y: 6 }, { x: 2, y: 1 }, { x: 5, y: 6 }, { x: 1, y: 1 }, { x: 6, y: 6 }, { x: 0, y: 1 }, { x: 7, y: 6 }]
-    
+
     for (let i = 0; i < 16; i++) {
         if (i % 2 == 0) {
             pawns.push(new Piece('pawn', 'b', coords[i]))
@@ -217,10 +239,10 @@ function get_pawns(){
     return pawns;
 }
 
-function get_kings(){
+function get_kings() {
     const kings: piece[] = []
     const coords: location[] = [{ x: 4, y: 0 }, { x: 4, y: 7 }]
-    
+
     for (let i = 0; i < 4; i++) {
         if (i % 2 == 0) {
             kings.push(new Piece('king', 'b', coords[i]))
@@ -231,10 +253,10 @@ function get_kings(){
     return kings;
 }
 
-function get_queens(){
+function get_queens() {
     const queens: piece[] = []
     const coords: location[] = [{ x: 3, y: 0 }, { x: 3, y: 7 }]
-    
+
     for (let i = 0; i < 4; i++) {
         if (i % 2 == 0) {
             queens.push(new Piece('queen', 'b', coords[i]))
@@ -253,51 +275,51 @@ function validRookMove(board: Array<Array<null | piece>>, current_x: coordinate,
         canCut: []
     }
 
-    let i = 1; 
-    while(current_x+i <= 7){
-        if(board[current_x+i][current_y] != null){
-            if(selfPiecePresent(board, current_x+i as coordinate, current_y, current_x, current_y )){
-                response.canCut.push({ x: current_x+i as coordinate, y: current_y })
+    let i = 1;
+    while (current_x + i <= 7) {
+        if (board[current_x + i][current_y] != null) {
+            if (selfPiecePresent(board, current_x + i as coordinate, current_y, current_x, current_y)) {
+                response.canCut.push({ x: current_x + i as coordinate, y: current_y })
             }
             break;
         }
-        response.canMoveto.push({x: current_x+i as coordinate, y: current_y});
+        response.canMoveto.push({ x: current_x + i as coordinate, y: current_y });
         i++;
     }
 
-    i=1;
-    while(current_y+i <= 7){
-        if(board[current_x][current_y+i] != null){
-            if(selfPiecePresent(board, current_x, current_y+i as coordinate, current_x, current_y)){
-                response.canCut.push({ x: current_x, y: current_y+i as coordinate })
+    i = 1;
+    while (current_y + i <= 7) {
+        if (board[current_x][current_y + i] != null) {
+            if (selfPiecePresent(board, current_x, current_y + i as coordinate, current_x, current_y)) {
+                response.canCut.push({ x: current_x, y: current_y + i as coordinate })
             }
             break;
         }
-        response.canMoveto.push({x: current_x, y: current_y+i as coordinate});
+        response.canMoveto.push({ x: current_x, y: current_y + i as coordinate });
         i++;
     }
 
-    i=1;
-    while(current_x-i >= 0){
-        if(board[current_x-i][current_y] != null){
-            if(selfPiecePresent(board, current_x-i as coordinate, current_y, current_x, current_y)){
-                response.canCut.push({ x: current_x-i as coordinate, y: current_y })
+    i = 1;
+    while (current_x - i >= 0) {
+        if (board[current_x - i][current_y] != null) {
+            if (selfPiecePresent(board, current_x - i as coordinate, current_y, current_x, current_y)) {
+                response.canCut.push({ x: current_x - i as coordinate, y: current_y })
             }
             break;
         }
-        response.canMoveto.push({x: current_x-i as coordinate, y: current_y});
+        response.canMoveto.push({ x: current_x - i as coordinate, y: current_y });
         i++;
     }
 
-    i=1;
-    while(current_y-i >= 0){
-        if(board[current_x][current_y-i] != null){
-            if(selfPiecePresent(board, current_x, current_y-i as coordinate, current_x, current_y)){
-                response.canCut.push({ x: current_x, y: current_y-i as coordinate })
+    i = 1;
+    while (current_y - i >= 0) {
+        if (board[current_x][current_y - i] != null) {
+            if (selfPiecePresent(board, current_x, current_y - i as coordinate, current_x, current_y)) {
+                response.canCut.push({ x: current_x, y: current_y - i as coordinate })
             }
             break;
         }
-        response.canMoveto.push({x: current_x, y: current_y-i as coordinate});
+        response.canMoveto.push({ x: current_x, y: current_y - i as coordinate });
         i++;
     }
 
@@ -312,40 +334,40 @@ function validPawnMove(board: Array<Array<null | piece>>, current_x: coordinate,
     }
     switch (color) {
         case "b":
-            if(current_x+1>=0 && current_x+1 <= 7 && board[current_x+1][current_y] == null){
-                response.canMoveto.push({x: current_x+1 as coordinate, y: current_y})
+            if (current_x + 1 >= 0 && current_x + 1 <= 7 && board[current_x + 1][current_y] == null) {
+                response.canMoveto.push({ x: current_x + 1 as coordinate, y: current_y })
             }
-            if(current_y+1>=0 && current_y+1 <= 7 && current_x+1 >= 0 && current_x+1 <=7 && board[current_x+1][current_y+1] != null && selfPiecePresent(board, current_x+1 as coordinate, current_y+1 as coordinate, current_x, current_y)){
-                response.canCut.push({x: current_x+1 as coordinate, y: current_y+1 as coordinate})
+            if (current_y + 1 >= 0 && current_y + 1 <= 7 && current_x + 1 >= 0 && current_x + 1 <= 7 && board[current_x + 1][current_y + 1] != null && selfPiecePresent(board, current_x + 1 as coordinate, current_y + 1 as coordinate, current_x, current_y)) {
+                response.canCut.push({ x: current_x + 1 as coordinate, y: current_y + 1 as coordinate })
             }
-            if(current_y-1>=0 && current_y-1 <= 7 && current_x+1 >= 0 && current_x+1 <=7 && board[current_x+1][current_y-1] != null && selfPiecePresent(board, current_x+1 as coordinate, current_y-1 as coordinate, current_x, current_y)){
-                response.canCut.push({x: current_x+1 as coordinate, y: current_y-1 as coordinate})
+            if (current_y - 1 >= 0 && current_y - 1 <= 7 && current_x + 1 >= 0 && current_x + 1 <= 7 && board[current_x + 1][current_y - 1] != null && selfPiecePresent(board, current_x + 1 as coordinate, current_y - 1 as coordinate, current_x, current_y)) {
+                response.canCut.push({ x: current_x + 1 as coordinate, y: current_y - 1 as coordinate })
             }
-            if(board[current_x][current_y]?.moves == 0){
-                if(current_x+2>=0 && current_x+2 <= 7 && board[current_x+1][current_y] == null && board[current_x+2][current_y] == null){
-                    response.canMoveto.push({x: current_x+2 as coordinate, y: current_y})
+            if (board[current_x][current_y]?.moves == 0) {
+                if (current_x + 2 >= 0 && current_x + 2 <= 7 && board[current_x + 1][current_y] == null && board[current_x + 2][current_y] == null) {
+                    response.canMoveto.push({ x: current_x + 2 as coordinate, y: current_y })
                 }
             }
             return response;
-        
+
         case "w":
-            if(current_x-1>=0 && current_x-1 <= 7 && board[current_x-1][current_y] == null){
-                response.canMoveto.push({x: current_x-1 as coordinate, y: current_y})
+            if (current_x - 1 >= 0 && current_x - 1 <= 7 && board[current_x - 1][current_y] == null) {
+                response.canMoveto.push({ x: current_x - 1 as coordinate, y: current_y })
             }
-            if(current_y+1>=0 && current_y+1 <= 7 && current_x-1 >= 0 && current_x-1 <=7 && board[current_x-1][current_y+1] != null && selfPiecePresent(board, current_x-1 as coordinate, current_y+1 as coordinate, current_x, current_y)){
-                response.canCut.push({x: current_x-1 as coordinate, y: current_y+1 as coordinate})
+            if (current_y + 1 >= 0 && current_y + 1 <= 7 && current_x - 1 >= 0 && current_x - 1 <= 7 && board[current_x - 1][current_y + 1] != null && selfPiecePresent(board, current_x - 1 as coordinate, current_y + 1 as coordinate, current_x, current_y)) {
+                response.canCut.push({ x: current_x - 1 as coordinate, y: current_y + 1 as coordinate })
             }
-            if(current_y-1>=0 && current_y-1 <= 7 && current_x-1 >= 0 && current_x-1 <=7 && board[current_x-1][current_y-1] != null && selfPiecePresent(board, current_x-1 as coordinate, current_y-1 as coordinate, current_x, current_y)){
-                response.canCut.push({x: current_x-1 as coordinate, y: current_y-1 as coordinate})
+            if (current_y - 1 >= 0 && current_y - 1 <= 7 && current_x - 1 >= 0 && current_x - 1 <= 7 && board[current_x - 1][current_y - 1] != null && selfPiecePresent(board, current_x - 1 as coordinate, current_y - 1 as coordinate, current_x, current_y)) {
+                response.canCut.push({ x: current_x - 1 as coordinate, y: current_y - 1 as coordinate })
             }
-            if(board[current_x][current_y]?.moves == 0){
-                if(current_x-2>=0 && current_x-2 <= 7 && board[current_x-1][current_y] == null && board[current_x-2][current_y] == null){
-                    response.canMoveto.push({x: current_x-2 as coordinate, y: current_y})
+            if (board[current_x][current_y]?.moves == 0) {
+                if (current_x - 2 >= 0 && current_x - 2 <= 7 && board[current_x - 1][current_y] == null && board[current_x - 2][current_y] == null) {
+                    response.canMoveto.push({ x: current_x - 2 as coordinate, y: current_y })
                 }
             }
             return response;
     }
-    
+
 }
 
 function validBishopMove(board: Array<Array<null | piece>>, current_x: coordinate, current_y: coordinate) {
@@ -355,50 +377,50 @@ function validBishopMove(board: Array<Array<null | piece>>, current_x: coordinat
     }
 
     let i = 1;
-    while(current_x+i <= 7 && current_y+i <= 7){
-        if(board[current_x+i][current_y+i] != null){
-            if(selfPiecePresent(board, current_x+i as coordinate, current_y+i as coordinate, current_x, current_y)){
-                response.canCut.push({ x: current_x+i as coordinate, y: current_y+i  as coordinate })
+    while (current_x + i <= 7 && current_y + i <= 7) {
+        if (board[current_x + i][current_y + i] != null) {
+            if (selfPiecePresent(board, current_x + i as coordinate, current_y + i as coordinate, current_x, current_y)) {
+                response.canCut.push({ x: current_x + i as coordinate, y: current_y + i as coordinate })
             }
             break;
         }
-        response.canMoveto.push({ x: current_x+i as coordinate, y: current_y+i  as coordinate })
+        response.canMoveto.push({ x: current_x + i as coordinate, y: current_y + i as coordinate })
         i++;
     }
 
     i = 1;
-    while(current_x+i <= 7 && current_y-i >= 0){
-        if(board[current_x+i][current_y-i] != null){
-            if(selfPiecePresent(board, current_x+i as coordinate, current_y-i as coordinate, current_x, current_y)){
-                response.canCut.push({ x: current_x+i as coordinate, y: current_y-i  as coordinate })
+    while (current_x + i <= 7 && current_y - i >= 0) {
+        if (board[current_x + i][current_y - i] != null) {
+            if (selfPiecePresent(board, current_x + i as coordinate, current_y - i as coordinate, current_x, current_y)) {
+                response.canCut.push({ x: current_x + i as coordinate, y: current_y - i as coordinate })
             }
             break;
         }
-        response.canMoveto.push({ x: current_x+i as coordinate, y: current_y-i  as coordinate })
+        response.canMoveto.push({ x: current_x + i as coordinate, y: current_y - i as coordinate })
         i++;
     }
 
     i = 1;
-    while(current_x-i >= 0 && current_y-i >= 0){
-        if(board[current_x-i][current_y-i] != null){
-            if(selfPiecePresent(board, current_x-i as coordinate, current_y-i as coordinate, current_x, current_y)){
-                response.canCut.push({ x: current_x-i as coordinate, y: current_y-i  as coordinate })
+    while (current_x - i >= 0 && current_y - i >= 0) {
+        if (board[current_x - i][current_y - i] != null) {
+            if (selfPiecePresent(board, current_x - i as coordinate, current_y - i as coordinate, current_x, current_y)) {
+                response.canCut.push({ x: current_x - i as coordinate, y: current_y - i as coordinate })
             }
             break;
         }
-        response.canMoveto.push({ x: current_x-i as coordinate, y: current_y-i  as coordinate })
+        response.canMoveto.push({ x: current_x - i as coordinate, y: current_y - i as coordinate })
         i++;
     }
 
     i = 1;
-    while(current_x-i >= 0 && current_y+i <=7){
-        if(board[current_x-i][current_y+i] != null){
-            if(selfPiecePresent(board, current_x-i as coordinate, current_y+i as coordinate, current_x, current_y)){
-                response.canCut.push({ x: current_x-i as coordinate, y: current_y+i  as coordinate })
+    while (current_x - i >= 0 && current_y + i <= 7) {
+        if (board[current_x - i][current_y + i] != null) {
+            if (selfPiecePresent(board, current_x - i as coordinate, current_y + i as coordinate, current_x, current_y)) {
+                response.canCut.push({ x: current_x - i as coordinate, y: current_y + i as coordinate })
             }
             break;
         }
-        response.canMoveto.push({ x: current_x-i as coordinate, y: current_y+i  as coordinate })
+        response.canMoveto.push({ x: current_x - i as coordinate, y: current_y + i as coordinate })
         i++;
     }
 
@@ -419,26 +441,26 @@ function validKnightMove(board: Array<Array<null | piece>>, current_x: coordinat
     ]
 
     for (let i = 0; i < 4; i++) {
-        if (current_x + coords[i][0] <=7 && current_x + coords[i][0] >=0 && current_y + coords[i][1] <=7 && current_y + coords[i][1] >=0 ) {
-            if(board[current_x+coords[i][0]][current_y + coords[i][1]] != null){
-                if(selfPiecePresent(board, current_x+coords[i][0] as coordinate, current_y + coords[i][1] as coordinate, current_x, current_y)){
-                    response.canCut.push({ x: current_x+coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate });
+        if (current_x + coords[i][0] <= 7 && current_x + coords[i][0] >= 0 && current_y + coords[i][1] <= 7 && current_y + coords[i][1] >= 0) {
+            if (board[current_x + coords[i][0]][current_y + coords[i][1]] != null) {
+                if (selfPiecePresent(board, current_x + coords[i][0] as coordinate, current_y + coords[i][1] as coordinate, current_x, current_y)) {
+                    response.canCut.push({ x: current_x + coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate });
                 }
-            }else {
-                response.canMoveto.push({ x: current_x+coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate });
+            } else {
+                response.canMoveto.push({ x: current_x + coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate });
             }
         }
     }
 
     for (let i = 0; i < 4; i++) {
         if (current_x + coords[i][1] <= 7 && current_x + coords[i][1] >= 0 && current_y + coords[i][0] <= 7 && current_y + coords[i][0] >= 0) {
-            if(board[current_x+coords[i][1]][current_y + coords[i][0]] != null){
-                if(selfPiecePresent(board, current_x+coords[i][1] as coordinate, current_y + coords[i][0] as coordinate, current_x, current_y)){
-                    response.canCut.push({ x: current_x+coords[i][1] as coordinate, y: current_y + coords[i][0] as coordinate });
+            if (board[current_x + coords[i][1]][current_y + coords[i][0]] != null) {
+                if (selfPiecePresent(board, current_x + coords[i][1] as coordinate, current_y + coords[i][0] as coordinate, current_x, current_y)) {
+                    response.canCut.push({ x: current_x + coords[i][1] as coordinate, y: current_y + coords[i][0] as coordinate });
                 }
             }
             else {
-                response.canMoveto.push({ x: current_x+coords[i][1] as coordinate, y: current_y + coords[i][0] as coordinate });
+                response.canMoveto.push({ x: current_x + coords[i][1] as coordinate, y: current_y + coords[i][0] as coordinate });
             }
         }
     }
@@ -446,48 +468,245 @@ function validKnightMove(board: Array<Array<null | piece>>, current_x: coordinat
 
 }
 
-function validKingMove(board: Array<Array<null | piece>>, current_x: coordinate, current_y: coordinate) {
+function validKingMove(board: Board, current_x: coordinate, current_y: coordinate) {
     const response: response = {
         canMoveto: [],
         canCut: []
     }
-    
+
     let coords = [[-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1]]
     for (let i = 0; i < 8; i++) {
         if (current_x + coords[i][0] <= 7 && current_y + coords[i][1] <= 7 && current_x + coords[i][0] >= 0 && current_y + coords[i][1] >= 0) {
-            if(board[current_x + coords[i][0]][current_y + coords[i][1]] != null){
-                if(selfPiecePresent(board, current_x + coords[i][0] as coordinate, current_y + coords[i][1] as coordinate, current_x, current_y)){
-                    response.canCut.push({ x: current_x + coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate })
+            if (board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]] != null) {
+                if (selfPiecePresent(board.getBoard(), current_x + coords[i][0] as coordinate, current_y + coords[i][1] as coordinate, current_x, current_y)) {
+                    let kingIsCutting = false;
+                    for(let j=0;j<board.getBoard().length;j++){
+                        for(let k=0;k<board.getBoard()[j].length;k++){
+                            const piece = board.getBoard()[j][k];
+                            if(piece && selfPiecePresent(board.getBoard(), current_x, current_y, j as coordinate, k as coordinate) && piece.name != "king"){
+                                board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]] = board.getBoard()[current_x][current_y];
+                                board.getBoard()[current_x][current_y] = null;
+                                const move = moveTo(board, j, k);
+                                const cut = move?.canCut.some((loc) => loc.x == current_x + coords[i][0] && loc.y == current_y + coords[i][1]);
+                                if(cut){
+                                    console.log(piece)
+                                    kingIsCutting = true
+                                }
+                                board.getBoard()[current_x][current_y] = board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]];
+                                board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]] = null;
+                            }
+                        }
+                    }
+                    if(!kingIsCutting){
+                        response.canCut.push({ x: current_x + coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate })
+                    }
                 }
             } else {
-                response.canMoveto.push({ x: current_x + coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate })
+                let kingIsCutting = false;
+                for(let j=0;j<board.getBoard().length;j++){
+                    for(let k=0;k<board.getBoard()[j].length;k++){
+                        const piece = board.getBoard()[j][k];
+                        if(piece && selfPiecePresent(board.getBoard(), current_x, current_y, j as coordinate, k as coordinate) && piece.name != "king"){
+                            board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]] = board.getBoard()[current_x][current_y];
+                            board.getBoard()[current_x][current_y] = null;
+                            const move = moveTo(board, j, k);
+                            const cut = move?.canCut.some((loc) => loc.x == current_x + coords[i][0] && loc.y == current_y + coords[i][1]);
+                            if(cut){
+                                console.log(piece)
+                                kingIsCutting = true;
+                                // response.canCut.push({ x: current_x + coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate })
+                            }
+                            board.getBoard()[current_x][current_y] = board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]];
+                            board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]] = null;
+                        }
+                    }
+                }
+                if(!kingIsCutting){
+                    response.canMoveto.push({ x: current_x + coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate })
+                }
             }
         }
     }
     return response;
 }
 
-function validQueenMove(board: Array<Array<null | piece>>, current_x: coordinate, current_y: coordinate) {
+function validQueenMove(board: Array<Array<null | piece>>, current_x: coordinate, current_y: coordinate): response {
     const res1 = validRookMove(board, current_x, current_y)
     const res2 = validBishopMove(board, current_x, current_y);
 
     const canMoveTo = []
     const canCut = []
-    for(let i =0;i<res1.canMoveto.length;i++){
+    for (let i = 0; i < res1.canMoveto.length; i++) {
         canMoveTo.push(res1.canMoveto[i])
     }
-    for( let i =0;i<res2.canMoveto.length;i++){
+    for (let i = 0; i < res2.canMoveto.length; i++) {
         canMoveTo.push(res2.canMoveto[i])
     }
-    for(  let i =0;i<res1.canCut.length;i++){
+    for (let i = 0; i < res1.canCut.length; i++) {
         canCut.push(res1.canCut[i])
     }
-    for(  let i =0;i<res2.canCut.length;i++){
+    for (let i = 0; i < res2.canCut.length; i++) {
         canCut.push(res2.canCut[i])
     }
 
     return {
         canMoveto: canMoveTo,
         canCut
+    }
+}
+
+function isCheck(board: Board, goal_x: coordinate, goal_y: coordinate) {
+    const current_piece = board.getBoard()[goal_x][goal_y]
+    if (!current_piece) return {
+        check: false,
+        king: null
+    };
+
+    const res = moveTo(board, goal_x, goal_y)
+    if (!res?.canCut.length) return {
+        check: false,
+        king: null
+    };
+    for (let i = 0; i < res.canCut.length; i++) {
+        const piece = board.getBoard()[res.canCut[i].x][res.canCut[i].y]
+        if (piece?.name == "king" && piece.color != current_piece.color) {
+            return {
+                check: true,
+                king: {
+                    x: res.canCut[i].x,
+                    y: res.canCut[i].y
+                }
+            };
+        }
+    }
+    return {
+        check: false,
+        king: null
+    };
+
+}
+
+function isCheckMate(board: Board, kingsLocation: location, goal_x: coordinate, goal_y: coordinate) {
+
+    const king = board.getBoard()[kingsLocation.x][kingsLocation.y]
+    if (!king) return false;
+
+    const res = moveTo(board, kingsLocation.x, kingsLocation.y);
+
+    if (res?.canMoveto.length || res?.canCut.length) {
+
+        // if the king can move to a safe place
+        outerloop:
+        for (let i = 0; i < res.canMoveto.length; i++) {
+            for (let j = 0; j < board.getBoard().length; j++) {
+                for (let k = 0; k < board.getBoard()[j].length; k++) {
+                    const piece = board.getBoard()[j][k];
+                    if (piece && piece?.color != king.color && piece != king) {
+                        const move = moveTo(board, piece?.position?.x as number, piece.position?.y as number)
+                        const cut = move?.canCut.some(coords => coords.x == res.canMoveto[i].x && coords.y == res.canMoveto[i].y)
+                        if (cut) {
+                            continue outerloop;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        // if the king can cut the piece which gave check
+        outerloop2:
+        for (let i = 0; i < res.canCut.length; i++) {
+            for (let j = 0; j < board.getBoard().length; j++) {
+                for (let k = 0; k < board.getBoard()[j].length; k++) {
+                    const piece = board.getBoard()[j][k];
+                    if (piece && piece?.color != king.color && piece != king) {
+                        const move = moveTo(board, piece?.position?.x as number, piece.position?.y as number)
+                        const cut = move?.canCut.some(coords => coords.x == res.canCut[i].x && coords.y == res.canCut[i].y)
+                        if (cut) {
+                            continue outerloop2;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        // if our piece can save by coming in between
+        for (let i = 0; i < board.getBoard().length; i++) {
+            for (let j = 0; j < board.getBoard()[i].length; j++) {
+                const piece = board.getBoard()[i][j];
+                if (piece && piece?.color == king.color && piece != king) {
+                    const move = moveTo(board, piece?.position?.x as number, piece?.position?.y as number)
+                    if (move && (move.canCut.length != 0 || move?.canMoveto.length != 0)) {
+                        const cut = move?.canCut.some((coords) => coords.x == goal_x && coords.y == goal_y)
+                        if (cut) {
+                            return false;
+                        }
+                        for (let k = 0; k < move?.canMoveto.length; k++) {
+                            const pos = move.canMoveto[k];
+                            board.getBoard()[pos.x][pos.y] = piece;
+                            board.getBoard()[i][j] = null;
+                            const move2 = moveTo(board, goal_x, goal_y);
+                            const cut = move2?.canCut.some((coords) => coords.x == kingsLocation.x && coords.y == kingsLocation.y)
+                            const cut2 = move2?.canCut.some((coords) => coords.x == pos.x && coords.y == pos.y)
+                            board.getBoard()[i][j] = piece;
+                            board.getBoard()[pos.x][pos.y] = null;
+                            if (!cut && cut2) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // if our piece can cut the piece which gave check
+        for(let i=0;i<board.getBoard().length;i++){
+            for(let j=0;j<board.getBoard()[i].length;j++){
+                const piece = board.getBoard()[i][j];
+                if(piece && piece.color == board.getBoard()[kingsLocation.x][kingsLocation.y]?.color && piece.name != "king"){
+                    const move = moveTo(board, i, j);
+                    const cut = move?.canCut.some((coords) => coords.x == goal_x && coords.y == goal_y)
+                    if(cut){
+                        return false;
+                    }
+                }
+            }
+        }
+
+    }
+    return true;
+
+}
+
+function moveTo(board: Board, current_x: number, current_y: number): response | null {
+    if (!(current_x >= 0 && current_x <= 7)) return null;
+    if (!(current_y >= 0 && current_y <= 7)) return null;
+
+    const piece = board.getBoard()[current_x][current_y];
+    if (!piece) {
+        return null;
+    }
+
+    const name = piece.name
+
+    switch (name) {
+        case "rook":
+            return validRookMove(board.getBoard(), current_x as coordinate, current_y as coordinate);
+
+        case "pawn":
+            return validPawnMove(board.getBoard(), current_x as coordinate, current_y as coordinate);
+
+        case "bishop":
+            return validBishopMove(board.getBoard(), current_x as coordinate, current_y as coordinate);
+
+        case "knight":
+            return validKnightMove(board.getBoard(), current_x as coordinate, current_y as coordinate);
+
+        case "king":
+            return validKingMove(board, current_x as coordinate, current_y as coordinate);
+
+        case "queen":
+            return validQueenMove(board.getBoard(), current_x as coordinate, current_y as coordinate)
     }
 }
