@@ -88,7 +88,7 @@ export class Board {
         return this.steps;
     }
 
-    #setWinner(winner: color){
+    #setWinner(winner: color) {
         this.winner = winner
     }
 
@@ -96,7 +96,7 @@ export class Board {
         return this.winner;
     }
 
-    getCaptured(){
+    getCaptured() {
         return this.captured;
     }
 
@@ -153,9 +153,9 @@ export class Board {
         }
 
         board.chess_board[current_x][current_y]?.increment_move()
-        if(board.chess_board[goal_x][goal_y] != null){
+        if (board.chess_board[goal_x][goal_y] != null) {
             const color = board.chess_board[goal_x][goal_y].color
-            if(color == 'b'){
+            if (color == 'b') {
                 this.captured.b.push(board.chess_board[goal_x][goal_y])
             } else {
                 this.captured.w.push(board.chess_board[goal_x][goal_y])
@@ -169,9 +169,9 @@ export class Board {
         }
         const check = isCheck(board, goal_x, goal_y)
         let checkMate = false;
-        if(check.check && check.king){
+        if (check.check && check.king) {
             checkMate = isCheckMate(board, check.king, goal_x, goal_y)
-            if(checkMate){
+            if (checkMate) {
                 this.#setWinner(board.getBoard()[goal_x][goal_y]?.color as color);
             }
         }
@@ -500,16 +500,16 @@ function validKingMove(board: Board, current_x: coordinate, current_y: coordinat
             if (board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]] != null) {
                 if (selfPiecePresent(board.getBoard(), current_x + coords[i][0] as coordinate, current_y + coords[i][1] as coordinate, current_x, current_y)) {
                     let kingIsCutting = false;
-                    for(let j=0;j<board.getBoard().length;j++){
-                        for(let k=0;k<board.getBoard()[j].length;k++){
+                    for (let j = 0; j < board.getBoard().length; j++) {
+                        for (let k = 0; k < board.getBoard()[j].length; k++) {
                             const piece = board.getBoard()[j][k];
-                            if(piece && selfPiecePresent(board.getBoard(), current_x, current_y, j as coordinate, k as coordinate) && piece.name != "king"){
+                            if (piece && selfPiecePresent(board.getBoard(), current_x, current_y, j as coordinate, k as coordinate) && piece.name != "king") {
                                 const temp = board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]]
                                 board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]] = board.getBoard()[current_x][current_y];
                                 board.getBoard()[current_x][current_y] = null;
                                 const move = moveTo(board, j, k);
                                 const cut = move?.canCut.some((loc) => loc.x == current_x + coords[i][0] && loc.y == current_y + coords[i][1]);
-                                if(cut){
+                                if (cut) {
                                     kingIsCutting = true
                                 }
                                 board.getBoard()[current_x][current_y] = board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]];
@@ -517,21 +517,21 @@ function validKingMove(board: Board, current_x: coordinate, current_y: coordinat
                             }
                         }
                     }
-                    if(!kingIsCutting){
+                    if (!kingIsCutting) {
                         response.canCut.push({ x: current_x + coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate })
                     }
                 }
             } else {
                 let kingIsCutting = false;
-                for(let j=0;j<board.getBoard().length;j++){
-                    for(let k=0;k<board.getBoard()[j].length;k++){
+                for (let j = 0; j < board.getBoard().length; j++) {
+                    for (let k = 0; k < board.getBoard()[j].length; k++) {
                         const piece = board.getBoard()[j][k];
-                        if(piece && selfPiecePresent(board.getBoard(), current_x, current_y, j as coordinate, k as coordinate) && piece.name != "king"){
+                        if (piece && selfPiecePresent(board.getBoard(), current_x, current_y, j as coordinate, k as coordinate) && piece.name != "king") {
                             board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]] = board.getBoard()[current_x][current_y];
                             board.getBoard()[current_x][current_y] = null;
                             const move = moveTo(board, j, k);
                             const cut = move?.canCut.some((loc) => loc.x == current_x + coords[i][0] && loc.y == current_y + coords[i][1]);
-                            if(cut){
+                            if (cut) {
                                 kingIsCutting = true;
                                 // response.canCut.push({ x: current_x + coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate })
                             }
@@ -540,7 +540,7 @@ function validKingMove(board: Board, current_x: coordinate, current_y: coordinat
                         }
                     }
                 }
-                if(!kingIsCutting){
+                if (!kingIsCutting) {
                     response.canMoveto.push({ x: current_x + coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate })
                 }
             }
@@ -589,7 +589,6 @@ function isCheck(board: Board, goal_x: coordinate, goal_y: coordinate) {
     for (let i = 0; i < res.canCut.length; i++) {
         const piece = board.getBoard()[res.canCut[i].x][res.canCut[i].y]
         if (piece?.name == "king" && piece.color != current_piece.color) {
-            console.log("Hii I am king")
             return {
                 check: true,
                 king: {
@@ -599,7 +598,6 @@ function isCheck(board: Board, goal_x: coordinate, goal_y: coordinate) {
             };
         }
     }
-    console.log("Hii I am not king")
     return {
         check: false,
         king: null
@@ -610,12 +608,10 @@ function isCheck(board: Board, goal_x: coordinate, goal_y: coordinate) {
 function isCheckMate(board: Board, kingsLocation: location, goal_x: coordinate, goal_y: coordinate) {
     const king = board.getBoard()[kingsLocation.x][kingsLocation.y]
     if (!king) return false;
-    
+
     const res = moveTo(board, kingsLocation.x, kingsLocation.y);
-    console.log(res)
-    
+
     // if the king can move to a location where it is safe
-    console.log()
     if (res?.canMoveto.length || res?.canCut.length) {
         outerloop:
         for (let i = 0; i < res.canMoveto.length; i++) {
@@ -653,7 +649,6 @@ function isCheckMate(board: Board, kingsLocation: location, goal_x: coordinate, 
                         board.getBoard()[res.canCut[i].x][res.canCut[i].y] = cuttedOne;
                         const cut = move?.canCut.some(coords => coords.x == res.canCut[i].x && coords.y == res.canCut[i].y)
                         if (cut) {
-                            console.log(piece)
                             continue outerloop2;
                         }
                     }
@@ -662,50 +657,51 @@ function isCheckMate(board: Board, kingsLocation: location, goal_x: coordinate, 
             return false;
         }
 
-        // if our piece can save by coming in between
-        for (let i = 0; i < board.getBoard().length; i++) {
-            for (let j = 0; j < board.getBoard()[i].length; j++) {
-                const piece = board.getBoard()[i][j];
-                if (piece && piece?.color == king.color && piece != king) {
-                    const move = moveTo(board, piece?.position?.x as number, piece?.position?.y as number)
-                    if (move && (move.canCut.length != 0 || move?.canMoveto.length != 0)) {
-                        const cut = move?.canCut.some((coords) => coords.x == goal_x && coords.y == goal_y)
-                        if (cut) {
-                            return false;
-                        }
-                        for (let k = 0; k < move?.canMoveto.length; k++) {
-                            const pos = move.canMoveto[k];
-                            board.getBoard()[pos.x][pos.y] = piece;
-                            board.getBoard()[i][j] = null;
-                            const move2 = moveTo(board, goal_x, goal_y);
-                            const cut = move2?.canCut.some((coords) => coords.x == kingsLocation.x && coords.y == kingsLocation.y)
-                            const cut2 = move2?.canCut.some((coords) => coords.x == pos.x && coords.y == pos.y)
-                            board.getBoard()[i][j] = piece;
-                            board.getBoard()[pos.x][pos.y] = null;
-                            if (!cut && cut2) {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    }
 
-        // if our piece can cut the piece which gave check
-        for(let i=0;i<board.getBoard().length;i++){
-            for(let j=0;j<board.getBoard()[i].length;j++){
-                const piece = board.getBoard()[i][j];
-                if(piece && piece.color == board.getBoard()[kingsLocation.x][kingsLocation.y]?.color && piece.name != "king"){
-                    const move = moveTo(board, i, j);
+    // if our piece can save by coming in between
+    for (let i = 0; i < board.getBoard().length; i++) {
+        for (let j = 0; j < board.getBoard()[i].length; j++) {
+            const piece = board.getBoard()[i][j];
+            if (piece && piece?.color == king.color && piece != king) {
+                const move = moveTo(board, piece?.position?.x as number, piece?.position?.y as number)
+                if (move && (move.canCut.length != 0 || move?.canMoveto.length != 0)) {
                     const cut = move?.canCut.some((coords) => coords.x == goal_x && coords.y == goal_y)
-                    if(cut){
+                    if (cut) {
                         return false;
                     }
+                    for (let k = 0; k < move?.canMoveto.length; k++) {
+                        const pos = move.canMoveto[k];
+                        board.getBoard()[pos.x][pos.y] = piece;
+                        board.getBoard()[i][j] = null;
+                        const move2 = moveTo(board, goal_x, goal_y);
+                        const cut = move2?.canCut.some((coords) => coords.x == kingsLocation.x && coords.y == kingsLocation.y)
+                        const cut2 = move2?.canCut.some((coords) => coords.x == pos.x && coords.y == pos.y)
+                        board.getBoard()[i][j] = piece;
+                        board.getBoard()[pos.x][pos.y] = null;
+                        if (!cut && cut2) {
+                            return false;
+                        }
+                    }
                 }
             }
         }
-
     }
+
+    // if our piece can cut the piece which gave check
+    for (let i = 0; i < board.getBoard().length; i++) {
+        for (let j = 0; j < board.getBoard()[i].length; j++) {
+            const piece = board.getBoard()[i][j];
+            if (piece && piece.color == board.getBoard()[kingsLocation.x][kingsLocation.y]?.color && piece.name != "king") {
+                const move = moveTo(board, i, j);
+                const cut = move?.canCut.some((coords) => coords.x == goal_x && coords.y == goal_y)
+                if (cut) {
+                    return false;
+                }
+            }
+        }
+    }
+
     return true;
 
 }
