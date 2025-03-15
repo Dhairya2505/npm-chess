@@ -1,6 +1,6 @@
 {
   "name": "npm-chess",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -8,5 +8,5 @@
   "keywords": [],
   "author": "Dhairya Singla",
   "license": "ISC",
-  "description": ""
+  "description": "captured pieces"
 }

@@ -25,6 +25,10 @@ export class Board {
         to: location
     }[];
     private winner: null | color;
+    private captured: {
+        'w': piece[],
+        'b': piece[]
+    }
 
     #changeTurn() {
         this.turn = !this.turn;
@@ -55,6 +59,10 @@ export class Board {
         this.steps = [];
         this.turn = true;
         this.winner = null;
+        this.captured = {
+            'b': [],
+            'w': []
+        }
 
         this.chess_board = [
             [rooks[2], knights[2], bishops[2], queens[0], kings[0], bishops[0], knights[0], rooks[0]],
@@ -86,6 +94,10 @@ export class Board {
 
     getWinner() {
         return this.winner;
+    }
+
+    getCaptured(){
+        return this.captured;
     }
 
     canMoveTo(board: Board, current_x: number, current_y: number): response | null {
@@ -141,9 +153,17 @@ export class Board {
         }
 
         board.chess_board[current_x][current_y]?.increment_move()
+        if(board.chess_board[goal_x][goal_y] != null){
+            const color = board.chess_board[goal_x][goal_y].color
+            if(color == 'b'){
+                this.captured.b.push(board.chess_board[goal_x][goal_y])
+            } else {
+                this.captured.w.push(board.chess_board[goal_x][goal_y])
+            }
+        }
         board.chess_board[goal_x][goal_y] = piece;
         board.chess_board[current_x][current_y] = null;
-        piece.position = {
+        board.chess_board[goal_x][goal_y].position = {
             x: goal_x,
             y: goal_y
         }
@@ -185,7 +205,7 @@ function validPositions(current_x: coordinate, current_y: coordinate, goal_x: co
 
 function get_knights() {
     const knights: piece[] = []
-    const coords: location[] = [{ x: 6, y: 0 }, { x: 1, y: 7 }, { x: 1, y: 0 }, { x: 6, y: 7 }]
+    const coords: location[] = [{ x: 0, y: 6 }, { x: 7, y: 1 }, { x: 0, y: 1 }, { x: 7, y: 6 }]
 
     for (let i = 0; i < 4; i++) {
         if (i % 2 == 0) {
@@ -213,7 +233,7 @@ function get_rooks() {
 
 function get_bishops() {
     const bishops: piece[] = []
-    const coords: location[] = [{ x: 5, y: 0 }, { x: 2, y: 7 }, { x: 2, y: 0 }, { x: 5, y: 7 }]
+    const coords: location[] = [{ x: 0, y: 5 }, { x: 7, y: 2 }, { x: 0, y: 2 }, { x: 7, y: 5 }]
 
     for (let i = 0; i < 4; i++) {
         if (i % 2 == 0) {
@@ -227,7 +247,7 @@ function get_bishops() {
 
 function get_pawns() {
     const pawns: piece[] = []
-    const coords: location[] = [{ x: 7, y: 1 }, { x: 0, y: 6 }, { x: 6, y: 1 }, { x: 1, y: 6 }, { x: 5, y: 1 }, { x: 2, y: 6 }, { x: 4, y: 1 }, { x: 3, y: 6 }, { x: 3, y: 1 }, { x: 4, y: 6 }, { x: 2, y: 1 }, { x: 5, y: 6 }, { x: 1, y: 1 }, { x: 6, y: 6 }, { x: 0, y: 1 }, { x: 7, y: 6 }]
+    const coords: location[] = [{ x: 1, y: 7 }, { x: 6, y: 0 }, { x: 1, y: 6 }, { x: 6, y: 1 }, { x: 1, y: 5 }, { x: 6, y: 2 }, { x: 1, y: 4 }, { x: 6, y: 3 }, { x: 1, y: 3 }, { x: 6, y: 4 }, { x: 1, y: 2 }, { x: 6, y: 5 }, { x: 1, y: 1 }, { x: 6, y: 6 }, { x: 1, y: 0 }, { x: 6, y: 7 }]
 
     for (let i = 0; i < 16; i++) {
         if (i % 2 == 0) {
@@ -241,7 +261,7 @@ function get_pawns() {
 
 function get_kings() {
     const kings: piece[] = []
-    const coords: location[] = [{ x: 4, y: 0 }, { x: 4, y: 7 }]
+    const coords: location[] = [{ x: 0, y: 4 }, { x: 7, y: 4 }]
 
     for (let i = 0; i < 4; i++) {
         if (i % 2 == 0) {
@@ -255,7 +275,7 @@ function get_kings() {
 
 function get_queens() {
     const queens: piece[] = []
-    const coords: location[] = [{ x: 3, y: 0 }, { x: 3, y: 7 }]
+    const coords: location[] = [{ x: 0, y: 3 }, { x: 7, y: 3 }]
 
     for (let i = 0; i < 4; i++) {
         if (i % 2 == 0) {
@@ -484,16 +504,16 @@ function validKingMove(board: Board, current_x: coordinate, current_y: coordinat
                         for(let k=0;k<board.getBoard()[j].length;k++){
                             const piece = board.getBoard()[j][k];
                             if(piece && selfPiecePresent(board.getBoard(), current_x, current_y, j as coordinate, k as coordinate) && piece.name != "king"){
+                                const temp = board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]]
                                 board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]] = board.getBoard()[current_x][current_y];
                                 board.getBoard()[current_x][current_y] = null;
                                 const move = moveTo(board, j, k);
                                 const cut = move?.canCut.some((loc) => loc.x == current_x + coords[i][0] && loc.y == current_y + coords[i][1]);
                                 if(cut){
-                                    console.log(piece)
                                     kingIsCutting = true
                                 }
                                 board.getBoard()[current_x][current_y] = board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]];
-                                board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]] = null;
+                                board.getBoard()[current_x + coords[i][0]][current_y + coords[i][1]] = temp;
                             }
                         }
                     }
@@ -512,7 +532,6 @@ function validKingMove(board: Board, current_x: coordinate, current_y: coordinat
                             const move = moveTo(board, j, k);
                             const cut = move?.canCut.some((loc) => loc.x == current_x + coords[i][0] && loc.y == current_y + coords[i][1]);
                             if(cut){
-                                console.log(piece)
                                 kingIsCutting = true;
                                 // response.canCut.push({ x: current_x + coords[i][0] as coordinate, y: current_y + coords[i][1] as coordinate })
                             }
@@ -570,6 +589,7 @@ function isCheck(board: Board, goal_x: coordinate, goal_y: coordinate) {
     for (let i = 0; i < res.canCut.length; i++) {
         const piece = board.getBoard()[res.canCut[i].x][res.canCut[i].y]
         if (piece?.name == "king" && piece.color != current_piece.color) {
+            console.log("Hii I am king")
             return {
                 check: true,
                 king: {
@@ -579,6 +599,7 @@ function isCheck(board: Board, goal_x: coordinate, goal_y: coordinate) {
             };
         }
     }
+    console.log("Hii I am not king")
     return {
         check: false,
         king: null
@@ -587,22 +608,26 @@ function isCheck(board: Board, goal_x: coordinate, goal_y: coordinate) {
 }
 
 function isCheckMate(board: Board, kingsLocation: location, goal_x: coordinate, goal_y: coordinate) {
-
     const king = board.getBoard()[kingsLocation.x][kingsLocation.y]
     if (!king) return false;
-
+    
     const res = moveTo(board, kingsLocation.x, kingsLocation.y);
-
+    console.log(res)
+    
+    // if the king can move to a location where it is safe
+    console.log()
     if (res?.canMoveto.length || res?.canCut.length) {
-
-        // if the king can move to a safe place
         outerloop:
         for (let i = 0; i < res.canMoveto.length; i++) {
             for (let j = 0; j < board.getBoard().length; j++) {
                 for (let k = 0; k < board.getBoard()[j].length; k++) {
                     const piece = board.getBoard()[j][k];
-                    if (piece && piece?.color != king.color && piece != king) {
-                        const move = moveTo(board, piece?.position?.x as number, piece.position?.y as number)
+                    if (piece && piece?.color != king.color && piece.name != "king") {
+                        board.getBoard()[res.canMoveto[i].x][res.canMoveto[i].y] = board.getBoard()[kingsLocation.x][kingsLocation.y]
+                        board.getBoard()[kingsLocation.x][kingsLocation.y] = null;
+                        const move = moveTo(board, j as number, k as number)
+                        board.getBoard()[kingsLocation.x][kingsLocation.y] = board.getBoard()[res.canMoveto[i].x][res.canMoveto[i].y];
+                        board.getBoard()[res.canMoveto[i].x][res.canMoveto[i].y] = null;
                         const cut = move?.canCut.some(coords => coords.x == res.canMoveto[i].x && coords.y == res.canMoveto[i].y)
                         if (cut) {
                             continue outerloop;
@@ -613,16 +638,22 @@ function isCheckMate(board: Board, kingsLocation: location, goal_x: coordinate, 
             return false;
         }
 
-        // if the king can cut the piece which gave check
+        // if the king can move to a location where it can cut someone and be safe
         outerloop2:
         for (let i = 0; i < res.canCut.length; i++) {
+            const cuttedOne = board.getBoard()[res.canCut[i].x][res.canCut[i].y]
             for (let j = 0; j < board.getBoard().length; j++) {
                 for (let k = 0; k < board.getBoard()[j].length; k++) {
                     const piece = board.getBoard()[j][k];
-                    if (piece && piece?.color != king.color && piece != king) {
-                        const move = moveTo(board, piece?.position?.x as number, piece.position?.y as number)
+                    if (piece && piece != cuttedOne && piece?.color != king.color && piece.name != "king") {
+                        board.getBoard()[res.canCut[i].x][res.canCut[i].y] = board.getBoard()[kingsLocation.x][kingsLocation.y]
+                        board.getBoard()[kingsLocation.x][kingsLocation.y] = null;
+                        const move = moveTo(board, j as number, k as number)
+                        board.getBoard()[kingsLocation.x][kingsLocation.y] = board.getBoard()[res.canCut[i].x][res.canCut[i].y];
+                        board.getBoard()[res.canCut[i].x][res.canCut[i].y] = cuttedOne;
                         const cut = move?.canCut.some(coords => coords.x == res.canCut[i].x && coords.y == res.canCut[i].y)
                         if (cut) {
+                            console.log(piece)
                             continue outerloop2;
                         }
                     }
