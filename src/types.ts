@@ -21,3 +21,9 @@ export interface response {
     canMoveto: location[],
     canCut: location[]
 }
+
+export interface check {
+    color: color,
+    kingsLocation: location,
+    enemysLocation: location
+}

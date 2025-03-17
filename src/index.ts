@@ -1,4 +1,4 @@
-import { color, coordinate, location, piece, piece_name, response } from "./types.js";
+import { check, color, coordinate, location, piece, piece_name, response } from "./types.js";
 
 class Piece {
     name: piece_name;
@@ -29,6 +29,7 @@ export class Board {
         'w': piece[],
         'b': piece[]
     }
+    private check: check | null = null;
 
     #changeTurn() {
         this.turn = !this.turn;
@@ -117,21 +118,39 @@ export class Board {
 
         switch (name) {
             case "rook":
+                if(this.check){
+                    return validRookMoveAfterCheck(this.check, board, current_x as coordinate, current_y as coordinate);
+                }
                 return validRookMove(board.chess_board, current_x as coordinate, current_y as coordinate);
 
             case "pawn":
+                if(this.check){
+                    return validPawnMoveAfterCheck(this.check, board, current_x as coordinate, current_y as coordinate)
+                }
                 return validPawnMove(board.chess_board, current_x as coordinate, current_y as coordinate);
 
             case "bishop":
+                if(this.check){
+                    return validBishopMoveAfterCheck(this.check, board, current_x as coordinate, current_y as coordinate)
+                }
                 return validBishopMove(board.chess_board, current_x as coordinate, current_y as coordinate);
 
             case "knight":
+                if(this.check){
+                    return validKnightMoveAfterCheck(this.check, board, current_x as coordinate, current_y as coordinate)
+                }
                 return validKnightMove(board.chess_board, current_x as coordinate, current_y as coordinate);
 
             case "king":
+                if(this.check){
+                    return validKingMoveAfterCheck(this.check, board, current_x as coordinate, current_y as coordinate)
+                }
                 return validKingMove(board, current_x as coordinate, current_y as coordinate);
 
             case "queen":
+                if(this.check){
+                    return validQueenMoveAfterCheck(this.check, board, current_x as coordinate, current_y as coordinate)
+                }
                 return validQueenMove(board.chess_board, current_x as coordinate, current_y as coordinate)
 
             default:
@@ -161,6 +180,32 @@ export class Board {
                 this.captured.w.push(board.chess_board[goal_x][goal_y])
             }
         }
+        let checkMate = false;
+        if(this.check){
+            board.chess_board[goal_x][goal_y] = piece;
+            board.chess_board[current_x][current_y] = null;
+            board.chess_board[goal_x][goal_y].position = {
+                x: goal_x,
+                y: goal_y
+            }
+            const check = isCheck(board, this.check.enemysLocation.x, this.check.enemysLocation.y)
+            if(check.check){
+                return {
+                    board,
+                    check: check.check,
+                    checkMate: true
+                };
+            }
+            this.check = null;
+            board.#changeTurn()
+            board.#addStep(current_x, current_y, goal_x, goal_y);
+            return {
+                board,
+                check: check.check,
+                checkMate
+            };
+
+        }
         board.chess_board[goal_x][goal_y] = piece;
         board.chess_board[current_x][current_y] = null;
         board.chess_board[goal_x][goal_y].position = {
@@ -168,8 +213,15 @@ export class Board {
             y: goal_y
         }
         const check = isCheck(board, goal_x, goal_y)
-        let checkMate = false;
         if (check.check && check.king) {
+            this.check = {
+                color: board.getBoard()[check.king.x][check.king.y]?.color as color,
+                enemysLocation: {
+                    x: goal_x,
+                    y: goal_y
+                },
+                kingsLocation: check.king
+            }
             checkMate = isCheckMate(board, check.king, goal_x, goal_y)
             if (checkMate) {
                 this.#setWinner(board.getBoard()[goal_x][goal_y]?.color as color);
@@ -286,8 +338,6 @@ function get_queens() {
     }
     return queens;
 }
-
-
 
 function validRookMove(board: Array<Array<null | piece>>, current_x: coordinate, current_y: coordinate) {
     const response: response = {
@@ -736,4 +786,150 @@ function moveTo(board: Board, current_x: number, current_y: number): response | 
         case "queen":
             return validQueenMove(board.getBoard(), current_x as coordinate, current_y as coordinate)
     }
+}
+
+function validRookMoveAfterCheck(Check: check, board: Board, current_x: coordinate, current_y: coordinate){
+    const response = validRookMove(board.getBoard(), current_x, current_y);
+
+    const cut = response.canCut.some((coords) => coords.x == Check.enemysLocation.x && coords.y == Check.enemysLocation.y)
+    if(cut){
+        return response
+    }
+
+    for(let i=0;i<response.canMoveto.length;i++){
+        const loc = response.canMoveto[i];
+        board.getBoard()[loc.x][loc.y] = board.getBoard()[current_x][current_y];
+        board.getBoard()[current_x][current_y] = null;
+        const check = isCheck(board,Check.enemysLocation.x, Check.enemysLocation.y)
+        board.getBoard()[current_x][current_y] = board.getBoard()[loc.x][loc.y]
+        board.getBoard()[loc.x][loc.y] = null; 
+        if(!check.check){
+            return response
+        }
+    }
+    return {
+        canMoveto: [],
+        canCut: []
+    }
+
+}
+
+function validPawnMoveAfterCheck(Check: check, board: Board, current_x: coordinate, current_y: coordinate){
+    const response = validPawnMove(board.getBoard(), current_x, current_y);
+    const cut = response.canCut.some((coords) => coords.x == Check.enemysLocation.x && coords.y == Check.enemysLocation.y)
+    if(cut){
+        return response
+    }
+    for(let i=0;i<response.canMoveto.length;i++){
+        const loc = response.canMoveto[i];
+        board.getBoard()[loc.x][loc.y] = board.getBoard()[current_x][current_y];
+        board.getBoard()[current_x][current_y] = null;
+        const check = isCheck(board,Check.enemysLocation.x, Check.enemysLocation.y)
+        board.getBoard()[current_x][current_y] = board.getBoard()[loc.x][loc.y]
+        board.getBoard()[loc.x][loc.y] = null; 
+        if(!check.check){
+            return response
+        }
+    }
+    return {
+        canMoveto: [],
+        canCut: []
+    }
+
+}
+
+function validBishopMoveAfterCheck(Check: check, board: Board, current_x: coordinate, current_y: coordinate){
+    const response = validBishopMove(board.getBoard(), current_x, current_y);
+    const cut = response.canCut.some((coords) => coords.x == Check.enemysLocation.x && coords.y == Check.enemysLocation.y)
+    if(cut){
+        return response
+    }
+    for(let i=0;i<response.canMoveto.length;i++){
+        const loc = response.canMoveto[i];
+        board.getBoard()[loc.x][loc.y] = board.getBoard()[current_x][current_y];
+        board.getBoard()[current_x][current_y] = null;
+        const check = isCheck(board,Check.enemysLocation.x, Check.enemysLocation.y)
+        board.getBoard()[current_x][current_y] = board.getBoard()[loc.x][loc.y]
+        board.getBoard()[loc.x][loc.y] = null; 
+        if(!check.check){
+            return response
+        }
+    }
+    return {
+        canMoveto: [],
+        canCut: []
+    }
+
+}
+
+function validKnightMoveAfterCheck(Check: check, board: Board, current_x: coordinate, current_y: coordinate){
+    const response = validKnightMove(board.getBoard(), current_x, current_y);
+    const cut = response.canCut.some((coords) => coords.x == Check.enemysLocation.x && coords.y == Check.enemysLocation.y)
+    if(cut){
+        return response
+    }
+    for(let i=0;i<response.canMoveto.length;i++){
+        const loc = response.canMoveto[i];
+        board.getBoard()[loc.x][loc.y] = board.getBoard()[current_x][current_y];
+        board.getBoard()[current_x][current_y] = null;
+        const check = isCheck(board,Check.enemysLocation.x, Check.enemysLocation.y)
+        board.getBoard()[current_x][current_y] = board.getBoard()[loc.x][loc.y]
+        board.getBoard()[loc.x][loc.y] = null; 
+        if(!check.check){
+            return response
+        }
+    }
+    return {
+        canMoveto: [],
+        canCut: []
+    }
+
+}
+
+function validKingMoveAfterCheck(Check: check, board: Board, current_x: coordinate, current_y: coordinate){
+    const response = validKingMove(board, current_x, current_y);
+    const cut = response.canCut.some((coords) => coords.x == Check.enemysLocation.x && coords.y == Check.enemysLocation.y)
+    if(cut){
+        return response
+    }
+    for(let i=0;i<response.canMoveto.length;i++){
+        const loc = response.canMoveto[i];
+        board.getBoard()[loc.x][loc.y] = board.getBoard()[current_x][current_y];
+        board.getBoard()[current_x][current_y] = null;
+        const check = isCheck(board,Check.enemysLocation.x, Check.enemysLocation.y)
+        board.getBoard()[current_x][current_y] = board.getBoard()[loc.x][loc.y]
+        board.getBoard()[loc.x][loc.y] = null; 
+        if(!check.check){
+            return response
+        }
+    }
+    return {
+        canMoveto: [],
+        canCut: []
+    }
+
+}
+
+function validQueenMoveAfterCheck(Check: check, board: Board, current_x: coordinate, current_y: coordinate){
+    const response = validQueenMove(board.getBoard(), current_x, current_y);
+    const cut = response.canCut.some((coords) => coords.x == Check.enemysLocation.x && coords.y == Check.enemysLocation.y)
+    if(cut){
+        return response
+    }
+    for(let i=0;i<response.canMoveto.length;i++){
+        const loc = response.canMoveto[i];
+        board.getBoard()[loc.x][loc.y] = board.getBoard()[current_x][current_y];
+        board.getBoard()[current_x][current_y] = null;
+        const check = isCheck(board,Check.enemysLocation.x, Check.enemysLocation.y)
+        board.getBoard()[current_x][current_y] = board.getBoard()[loc.x][loc.y]
+        board.getBoard()[loc.x][loc.y] = null; 
+        if(!check.check){
+            return response
+        }
+    }
+    return {
+        canMoveto: [],
+        canCut: []
+    }
+
 }
