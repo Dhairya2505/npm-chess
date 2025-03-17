@@ -190,6 +190,7 @@ export class Board {
             }
             const check = isCheck(board, this.check.enemysLocation.x, this.check.enemysLocation.y)
             if(check.check){
+                this.#setWinner(board.getBoard()[this.check.enemysLocation.x][this.check.enemysLocation.y]?.color as color);
                 return {
                     board,
                     check: check.check,
