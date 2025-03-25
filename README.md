@@ -26,8 +26,6 @@ Easily install and integrate it into your project to start developing chess appl
 
 3. Install the dependencies by running: `npm install`
 
-4. Start the project by running:`npm start`
-
 ## Technologies Used
 
 - **Programming Language**: TypeScript
