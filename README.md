@@ -20,7 +20,7 @@ Easily install and integrate it into your project to start developing chess appl
 # Installation & Setup Instructions
 
 1. Clone the repository to your local machine using the following command in your terminal:
-`git clone https://github.com/your-username/chess-project.git`
+`https://github.com/Dhairya2505/npm-chess.git`
 
 2. Navigate to the project directory: `cd npm-chess`
 
