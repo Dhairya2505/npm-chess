@@ -24,8 +24,6 @@ Easily install and integrate it into your project to start developing chess appl
 
 2. Navigate to the project directory: `cd npm-chess`
 
-3. Install the dependencies by running: `npm install`
-
 ## Technologies Used
 
 - **Programming Language**: TypeScript
